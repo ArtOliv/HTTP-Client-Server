@@ -100,7 +100,6 @@ int main(){
             printf("%s\n", response);
         }
 
-        printf("\nClient disconnected\n\n");
         close(connection_sock);
     }
 

@@ -23,41 +23,28 @@ int main(){
     char request[] = 
     "GET / HTTP/1.1\r\n"
     "Host: 127.0.0.1:6969\r\n"
-    "Connection: keep-alive\r\n"
+    "Connection: closed\r\n"
     "\r\n";
 
     size_t request_len = strlen(request);
     int received, sent;
 
-    while(1){
-        sent = send(client_sock, request, request_len, 0);
-        if(sent == -1){
-            printf("\nSend message failed\n\n");
-        }
-        
-        char buffer[30000];
-        
-        received = recv(client_sock, buffer, sizeof(buffer)-1, 0);
-        if(received == 0){
-            printf("\nServer connection closed\n\n");
-        } else if(received == -1){
-            printf("\nReceive message failed\n\n");
-        }
-        
-        buffer[received] = '\0';
-        printf("%s\n", buffer);
-        
-        printf("\nENTER for another request or 'close' to close connection: ");
-        char input[20];
-        if(!fgets(input, sizeof(input), stdin)){
-            break;
-        }
-
-        if(strcmp(input, "close\n") == 0){
-            break;
-        }
-        printf("\n");
+    sent = send(client_sock, request, request_len, 0);
+    if(sent == -1){
+        printf("\nSend message failed\n\n");
     }
+    
+    char buffer[30000];
+    
+    received = recv(client_sock, buffer, sizeof(buffer)-1, 0);
+    if(received == 0){
+        printf("\nServer connection closed\n\n");
+    } else if(received == -1){
+        printf("\nReceive message failed\n\n");
+    }
+    
+    buffer[received] = '\0';
+    printf("%s\n\n", buffer);
 
     close(client_sock);
     printf("\nSocket connection closed\n");
