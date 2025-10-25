@@ -13,54 +13,54 @@ int main(){
     addrPort.sin_port = htons(6969);
 
     if(connect(client_sock, (struct sockaddr*) &addrPort, sizeof(addrPort)) == -1){
-        printf("\nConnect Failed\n\n");
+        printf("\nConnect failed\n\n");
         close(client_sock);
         return 1;
     } else {
-        printf("\nConnected via Port 6969\n\n");
+        printf("\nConnected to server via Port 6969\n\n");
     }
 
-    char msg[256];
-    int countR;
+    char request[] = 
+    "GET / HTTP/1.1\r\n"
+    "Host: 127.0.0.1:6969\r\n"
+    "Connection: keep-alive\r\n"
+    "\r\n";
+
+    size_t request_len = strlen(request);
+    int received, sent;
 
     while(1){
-        countR = recv(client_sock, msg, sizeof(msg)-1, 0);
-        if(countR == 0){
-            printf("\nServer connection Closed\n\n");
-            break;
-        } else if(countR == -1){
-            printf("\nReceive message failed\n\n");
-            break;
-        }
-
-        msg[countR] = '\0';
-        printf("\nFrom Server: %s\n", msg);
-
-        printf("To server: ");
-        fflush(stdout);
-
-        if(!fgets(msg, sizeof(msg), stdin)){
-            break;
+        sent = send(client_sock, request, request_len, 0);
+        if(sent == -1){
+            printf("\nSend message failed\n\n");
         }
         
-        if(strcmp(msg, "Close\n") == 0){
+        char buffer[30000];
+        
+        received = recv(client_sock, buffer, sizeof(buffer)-1, 0);
+        if(received == 0){
+            printf("\nServer connection closed\n\n");
+        } else if(received == -1){
+            printf("\nReceive message failed\n\n");
+        }
+        
+        buffer[received] = '\0';
+        printf("%s\n", buffer);
+        
+        printf("\nENTER for another request or 'close' to close connection: ");
+        char input[20];
+        if(!fgets(input, sizeof(input), stdin)){
             break;
         }
 
-        size_t to_send = strlen(msg);
-        if(to_send > 0){
-            int sent = send(client_sock, msg, to_send, 0);
-            if(sent == -1){
-                printf("\nSend message Failed\n\n");
-                break;
-            }
+        if(strcmp(input, "close\n") == 0){
+            break;
         }
-
-
+        printf("\n");
     }
 
     close(client_sock);
-    printf("\nSocket connection Closed\n");
+    printf("\nSocket connection closed\n");
 
     return 0;
 }
