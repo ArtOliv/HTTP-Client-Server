@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <arpa/inet.h>
 
 int main(){
@@ -22,26 +24,12 @@ int main(){
         printf("\nBind success to port 6969\n\n");
     }
 
-    // Puts server to listen to a connection
+    // Put server to listen to a connection
     if(listen(server_sock, 10) == -1){
         printf("Listen failed\n\n");
         close(server_sock);
         return 1;
-    } else {
-        printf("Listening...\n\n");
     }
-
-    // Create connection socket
-    struct sockaddr_in client_addr;
-    socklen_t addr_len = sizeof(client_addr);
-    
-    int connection_sock = accept(server_sock, (struct sockaddr*) &client_addr, &addr_len);
-    if(connection_sock == -1){
-        printf("\nAccept error\n\n");
-        close(server_sock);
-        return 1;
-    }
-    printf("Accepted a connection\n\n");
 
     // Define server response
     char response[30000];
@@ -61,30 +49,63 @@ int main(){
 
     char buffer[30000];
     int received, sent;
-    
-    while(1){
-        received = recv(connection_sock, buffer, sizeof(buffer)-1, 0);
-        if(received == 0){
-            printf("\nClient connection closed\n\n");
-            break;
-        } else if(received == -1){
-            printf("\nReceive message failed\n\n");
-            break;
-        }
-        buffer[received] = '\0';
-        printf("%s\n", buffer);
+    struct sockaddr_in client_addr;
+    socklen_t addr_len = sizeof(client_addr);
 
-        sent = send(connection_sock, response, response_len, 0);
-        if(sent == -1){
-            printf("\nSend message failed\n\n");
-            break;
+    while(1){
+        printf("Waiting for connection...\n\n");
+
+        // Create connection socket
+        int connection_sock = accept(server_sock, (struct sockaddr*) &client_addr, &addr_len);
+        if(connection_sock == -1){
+            printf("\nAccept error\n\n");
+            close(server_sock);
+            return 1;
         }
-        printf("%s\n\n", response);
+        printf("Accepted a connection\n\n");
+
+        // Set connection timeout
+        struct timeval timeout;
+        timeout.tv_sec = 120;
+        timeout.tv_usec = 0;
+        if(setsockopt(connection_sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0){
+            printf("\nError on setting timeout(not fatal)\n\n");
+        }
+
+        // Server receive the request
+        while(1){
+            received = recv(connection_sock, buffer, sizeof(buffer)-1, 0);
+
+            if(received == 0){
+                printf("\nClient connection closed\n\n");
+                break;
+            } else if(received == -1){
+                if(errno == EWOULDBLOCK || errno == EAGAIN){
+                    printf("\nConnection timed out\n");
+                    break;
+                } else {
+                    printf("\nReceive message failed\n\n");
+                    break;
+                }
+            }
+            buffer[received] = '\0';
+            printf("%s\n", buffer);
+
+            // Server sends the response
+            sent = send(connection_sock, response, response_len, 0);
+            if(sent == -1){
+                printf("\nSend message failed\n\n");
+                break;
+            }
+            printf("%s\n", response);
+        }
+
+        printf("\nClient disconnected\n\n");
+        close(connection_sock);
     }
 
     // Close server connections
     close(server_sock);
-    close(connection_sock);
 
     printf("Socket connection closed\n");
 
