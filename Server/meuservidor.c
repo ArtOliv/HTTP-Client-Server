@@ -118,7 +118,6 @@ void send_file_list(int socket, const char *directory, const char *msg){
     off += snprintf(response + off, sizeof(response) - off,
         "HTTP/1.1 200 OK\r\n"
         "Content-Type: text/html\r\n\r\n"
-        "Connection: close\r\n"
         "<html><body><h1>%s</h1><ul>",
         msg
     );
