@@ -86,7 +86,7 @@ make rebuild
 Entre na pasta `Server` em um terminal e execute:
 
 ```bash
-./meuservidor /home/usr/caminho/para/diretorio
+./meuservidor /home/usr/caminho/para/seu/diretorio
 ```
 
 Para rodar o servidor e servir o diretório de arquivos. O servidor tem suporte para servir vários tipos de arquivos sendo **.html, .gif, .pdf, .jpeg, .png**, alguns deles.
@@ -100,7 +100,7 @@ Além disso possui um timeout de dois minutos caso o cliente fique inativo, fech
 Entre na pasta `Client` em outro terminal e execute:
 
 ```bash
-./meunavegador http//host:porta/index.html
+./meunavegador http://host:porta/index.html
 ```
 
 Essa é a forma de fazer a requisição. Caso não especifique a porta o cliente tentará conexão na porta **80 (padrão HTTP)**.
