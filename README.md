@@ -159,4 +159,4 @@ Projeto desenvolvido para estudo de Programação em Rede.
 
 ## Licença
 
-Este projeto está licenciado sob a MIT License — Sinta-se avontade para usar meu projeto da forma que quiser
+Este projeto está licenciado sob a MIT License — Sinta-se à vontade para usar meu projeto da forma que quiser
